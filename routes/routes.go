@@ -12,6 +12,8 @@ func SetupRouter(userHandler *handlers.UserHandler, helloHandler *handlers.Hello
 
 	// เพิ่ม Route สำหรับ "/users"
 	r.GET("/users", userHandler.GetUsers)
+	r.POST("/users", userHandler.CreateUser)
+	r.PUT("/users/:email", userHandler.UpdateUser)
 
 	// เพิ่ม Route สำหรับ "/"
 	r.GET("/", helloHandler.HelloHandler)

@@ -19,3 +19,48 @@ func NewUserService(repo *repositories.UserRepository) *UserService {
 func (service *UserService) GetUsers() ([]models.User, error) {
 	return service.Repo.GetAllUsers()
 }
+
+// ฟังก์ชันสำหรับดึงข้อมูลผู้ใช้ตาม Email
+func (s *UserService) GetUserByEmail(email string) (*models.User, error) {
+	var user models.User
+	if err := s.Repo.Where("email = ?", email).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+// ฟังก์ชันสำหรับสร้างผู้ใช้ใหม่
+func (s *UserService) CreateUser(userInput models.UserInput) (models.User, error) {
+	user := models.User{
+		Name:  userInput.Name,
+		Email: userInput.Email,
+	}
+	return s.Repo.CreateUser(user)
+}
+
+func (s *UserService) UpdateUser(email string, userInput models.User) (*models.User, error) {
+	// ค้นหาผู้ใช้จากฐานข้อมูล
+	var user models.User
+	if err := s.Repo.Where("email = ?", email).First(&user).Error; err != nil {
+		return nil, err
+	}
+
+	// อัปเดตเฉพาะฟิลด์ที่มีการส่งมาจาก client
+	if userInput.Name != "" {
+		user.Name = userInput.Name
+	}
+
+	// ตรวจสอบว่า email ที่ส่งมามีค่า ถ้าไม่มีให้ใช้ email เดิม
+	if userInput.Email != "" {
+		user.Email = userInput.Email
+	} else {
+		user.Email = user.Email // ใช้ email เดิม
+	}
+
+	// บันทึกการเปลี่ยนแปลง
+	if err := s.Repo.Save(&user); err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
