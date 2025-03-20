@@ -1,17 +1,32 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
+	"go-gin-api/config"
+	"go-gin-api/handlers"
+	"go-gin-api/models"
+	"go-gin-api/repositories"
+	"go-gin-api/routes"
+	"go-gin-api/services"
 )
 
 func main() {
-	r := gin.Default()
+	// เชื่อมต่อฐานข้อมูล
+	config.ConnectDatabase()
 
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "Hello GoGin",
-		})
-	})
+	// Auto Migrate Database (สร้างตารางอัตโนมัติ)
+	config.DB.AutoMigrate(&models.User{})
 
+	// สร้าง instance ของ repository, service และ handler สำหรับ User
+	userRepo := repositories.NewUserRepository(config.DB)
+	userService := services.NewUserService(userRepo)
+	userHandler := handlers.NewUserHandler(userService)
+
+	// สร้าง instance ของ handler สำหรับ Hello
+	helloHandler := &handlers.HelloHandler{}
+
+	// ตั้งค่า Router
+	r := routes.SetupRouter(userHandler, helloHandler)
+
+	// รันเซิร์ฟเวอร์
 	r.Run(":8080")
 }
