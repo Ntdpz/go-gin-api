@@ -56,3 +56,11 @@ func (r *UserRepository) Save(user *models.User) error {
 	}
 	return nil
 }
+
+// ฟังก์ชันลบผู้ใช้จากฐานข้อมูล
+func (r *UserRepository) Delete(user *models.User) error {
+	if err := r.DB.Delete(user).Error; err != nil {
+		return err // ถ้ามีข้อผิดพลาดในการลบ
+	}
+	return nil
+}

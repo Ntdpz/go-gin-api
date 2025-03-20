@@ -97,3 +97,21 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 		"user":    updatedUser,
 	})
 }
+
+// ฟังก์ชันสำหรับลบผู้ใช้
+func (h *UserHandler) DeleteUser(c *gin.Context) {
+	// ดึง email จาก URL Parameter
+	email := c.Param("email")
+
+	// เรียกใช้ Service ในการลบผู้ใช้
+	err := h.Service.DeleteUser(email)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	// ส่งผลลัพธ์ว่าได้ลบข้อมูลผู้ใช้เรียบร้อย
+	c.JSON(http.StatusOK, gin.H{
+		"message": "User deleted successfully",
+	})
+}

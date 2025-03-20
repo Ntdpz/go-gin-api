@@ -64,3 +64,19 @@ func (s *UserService) UpdateUser(email string, userInput models.User) (*models.U
 
 	return &user, nil
 }
+
+// ฟังก์ชันลบผู้ใช้ตาม Email
+func (s *UserService) DeleteUser(email string) error {
+	var user models.User
+	// ค้นหาผู้ใช้จากฐานข้อมูลตาม Email
+	if err := s.Repo.Where("email = ?", email).First(&user).Error; err != nil {
+		return err // หากไม่พบผู้ใช้
+	}
+
+	// ลบผู้ใช้
+	if err := s.Repo.Delete(&user); err != nil {
+		return err // หากเกิดข้อผิดพลาดในการลบ
+	}
+
+	return nil
+}
