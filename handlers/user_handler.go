@@ -19,8 +19,28 @@ func NewUserHandler(service *services.UserService) *UserHandler {
 	return &UserHandler{Service: service}
 }
 
-// ฟังก์ชันสำหรับดึงข้อมูลผู้ใช้ทั้งหมด
+// ฟังก์ชันสำหรับดึงข้อมูลผู้ใช้ทั้งหมดหรือดึงผู้ใช้ตาม Email (ผ่าน Query Parameter)
 func (h *UserHandler) GetUsers(c *gin.Context) {
+	// ดึง email จาก query parameter
+	email := c.DefaultQuery("email", "") // ถ้าไม่มี email จะเป็นค่าว่าง
+
+	// ถ้ามี email ใน query parameter
+	if email != "" {
+		// ค้นหาผู้ใช้จากฐานข้อมูลตาม email
+		user, err := h.Service.GetUserByEmail(email)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+			return
+		}
+
+		// ส่งข้อมูลผู้ใช้ที่พบ
+		c.JSON(http.StatusOK, gin.H{
+			"user": user,
+		})
+		return
+	}
+
+	// ถ้าไม่มี email ใน query parameter, ให้ดึงข้อมูลผู้ใช้ทั้งหมด
 	users, err := h.Service.GetUsers()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Cannot get users"})
